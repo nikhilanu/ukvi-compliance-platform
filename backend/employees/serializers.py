@@ -1,12 +1,15 @@
 from rest_framework import serializers
 
 from .models import Employee
+from compliance.services import calculate_employee_compliance
 
 class EmployeeSerializer(serializers.ModelSerializer):
     company_name = serializers.CharField(
         source="company.name",
         read_only=True
     )
+    compliance_score = serializers.SerializerMethodField()
+    compliance_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Employee
@@ -29,6 +32,8 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "soc_code",
             "salary",
             "weekly_hours",
+            "compliance_score",
+            "compliance_status",
             "created_at",
             "updated_at",
         ]
@@ -37,6 +42,14 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "company",
             "company_name",
             "full_name",
+            "compliance_score",
+            "compliance_status",
             "created_at",
             "updated_at",
         ]
+    
+    def get_compliance_score(self, obj):
+        return calculate_employee_compliance(obj)["score"]
+
+    def get_compliance_status(self, obj):
+        return calculate_employee_compliance(obj)["status"]
